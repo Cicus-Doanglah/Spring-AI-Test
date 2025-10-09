@@ -1,6 +1,7 @@
 package com.yudaputra.test.ai.service;
 
 import com.yudaputra.test.ai.entity.model.ChatRequest;
+import com.yudaputra.test.ai.utility.ChatSummarizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ai.chat.client.ChatClient;
@@ -27,9 +28,13 @@ public class PersonaChatService {
     @Autowired
     private ChatModel chatModel;
 
+    private ChatSummarizer chatSummarizer = new ChatSummarizer(chatModel);
+
     private final ChatClient chatClient;
 
     private final Map<String, List<Message>> personaHistories = new HashMap<>();
+
+    private static final int SUMMARY_THRESHOLD = 2;
 
     public PersonaChatService(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
@@ -62,16 +67,19 @@ public class PersonaChatService {
      * @return a response from the AI model in format of {@code ChatResponse}
      */
     public ChatResponse getChatResponseByPersona(ChatRequest chatRequest) {
+        ChatResponse response;
         String persona = chatRequest.getPersona();
         String userPrompt = chatRequest.getMessage();
 
-        ChatResponse response;
         if (!personas.containsKey(persona)) {
             throw new NoSuchElementException("Persona with name " + persona + " not found!");
         }
+
+        /* Getting history of used persona. */
         List<Message> history = personaHistories.computeIfAbsent(
                 persona, k -> new ArrayList<>());
 
+        /* Add new user prompt to history */
         UserMessage userMessage = new UserMessage(userPrompt);
         history.add(userMessage);
 
@@ -82,11 +90,19 @@ public class PersonaChatService {
         messages.add(0, systemMessage);
 
         Prompt prompt = new Prompt(messages);
+
+        /* Caller and save the reply from the AI model */
         response = chatModel.call(prompt);
+
         String replyString = response.getResult().getOutput().getText();
         if (replyString != null && !replyString.isEmpty()) {
             history.add(new AssistantMessage(replyString));
         }
+
+        if (history.size() >= SUMMARY_THRESHOLD * 2) {
+            chatSummarizer.summarizeHistory(persona, personas.get("summarizer"), history);
+        }
+
         return response;
     }
 }
