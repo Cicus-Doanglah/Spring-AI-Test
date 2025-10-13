@@ -6,25 +6,22 @@ import org.springframework.ai.chat.model.ChatModel;
 import org.springframework.ai.chat.messages.*;
 import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.Map;
 
+/**
+ * Class for summarizing chat log
+ */
 @Service
-//TODO : Still not working
 public class ChatSummarizer {
 
     private final Logger logger = LoggerFactory.getLogger(ChatSummarizer.class);
 
-    @Autowired
-    private Map<String, String> personas;
-
-    @Autowired
-    private ChatModel chatModel;
+    private final ChatModel chatModel;
 
     public ChatSummarizer(ChatModel chatModel) {
+        this.chatModel = chatModel;
     }
 
     /**

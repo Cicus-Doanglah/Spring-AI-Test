@@ -14,6 +14,7 @@ import org.springframework.ai.chat.model.ChatResponse;
 import org.springframework.ai.chat.prompt.Prompt;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import reactor.core.publisher.Flux;
 
 import java.util.*;
 
@@ -28,13 +29,14 @@ public class PersonaChatService {
     @Autowired
     private ChatModel chatModel;
 
-    private ChatSummarizer chatSummarizer = new ChatSummarizer(chatModel);
+    @Autowired
+    private ChatSummarizer chatSummarizer;
 
     private final ChatClient chatClient;
 
     private final Map<String, List<Message>> personaHistories = new HashMap<>();
 
-    private static final int SUMMARY_THRESHOLD = 2;
+    private static final int SUMMARY_THRESHOLD = 5;
 
     public PersonaChatService(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
@@ -79,6 +81,11 @@ public class PersonaChatService {
         List<Message> history = personaHistories.computeIfAbsent(
                 persona, k -> new ArrayList<>());
 
+        /* Summarize chat if log is more than 5 */
+        if (history.size() >= SUMMARY_THRESHOLD * 2) {
+            chatSummarizer.summarizeHistory(persona, personas.get("summarizer"), history);
+        }
+
         /* Add new user prompt to history */
         UserMessage userMessage = new UserMessage(userPrompt);
         history.add(userMessage);
@@ -99,10 +106,63 @@ public class PersonaChatService {
             history.add(new AssistantMessage(replyString));
         }
 
+        return response;
+    }
+
+    /**
+     * Function to get Chat Response with custom persona and memory.
+     * @param chatRequest Base chat request json {@code ChatRequest}
+     * @return a response from the AI model in format of {@code Flux<String>}
+     */
+    public Flux<String> streamChatResponseByPersona(ChatRequest chatRequest) {
+        String persona = chatRequest.getPersona();
+        String userPrompt = chatRequest.getMessage();
+
+        if (!personas.containsKey(persona)) {
+            throw new NoSuchElementException("Persona with name " + persona + " not found!");
+        }
+
+        /* Getting history of used persona. */
+        List<Message> history = personaHistories.computeIfAbsent(
+                persona, k -> new ArrayList<>());
+
+        /* Summarize chat if log is more than 5 */
         if (history.size() >= SUMMARY_THRESHOLD * 2) {
             chatSummarizer.summarizeHistory(persona, personas.get("summarizer"), history);
         }
 
-        return response;
+        /* Add new user prompt to history */
+        UserMessage userMessage = new UserMessage(userPrompt);
+        history.add(userMessage);
+
+        List<Message> messages = new ArrayList<>(history);
+        logger.info("Messages for stream : {}", messages);
+
+        SystemMessage systemMessage = new SystemMessage(personas.get(persona));
+        messages.add(0, systemMessage);
+
+        Prompt prompt = new Prompt(messages);
+
+        StringBuffer fullResponse = new StringBuffer();
+
+        return chatModel.stream(prompt)
+                .map(chatResponse -> {
+                    String chunk = chatResponse.getResult().getOutput().getText();
+                    if (chunk == null) {
+                        chunk = "";
+                    }
+                    fullResponse.append(chunk);
+                    return chunk;
+                })
+                .doOnComplete(() -> {
+                    String completeResponse = fullResponse.toString();
+                    if (!completeResponse.isEmpty()) {
+                        history.add(new AssistantMessage(completeResponse));
+                        logger.info("Add stream response to history: {}", completeResponse);
+                    }
+                })
+                .doOnError(error -> {
+                    logger.error("Stream chat error: {}", error.getMessage());
+                });
     }
 }

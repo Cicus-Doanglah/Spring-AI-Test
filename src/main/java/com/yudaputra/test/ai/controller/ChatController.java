@@ -3,12 +3,15 @@ package com.yudaputra.test.ai.controller;
 import com.yudaputra.test.ai.entity.model.ChatRequest;
 import com.yudaputra.test.ai.service.PersonaChatService;
 
+import jakarta.servlet.http.HttpSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Flux;
 
 import java.util.NoSuchElementException;
 
@@ -52,8 +55,15 @@ public class ChatController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping(value = "/structured")
-    public String chatByStructuredOutput(@RequestBody String message) {
-        return null;
+    @PostMapping(value = "/model/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public Flux<String> chatByModelStream(@RequestBody ChatRequest request) {
+        return personaChatService.streamChatResponseByPersona(request)
+                .onErrorResume(NoSuchElementException.class,
+                        e -> Flux.just("Error: Persona not found!"))
+                .onErrorResume(Exception.class,
+                        e -> {
+                            logger.error("Exception during streaming: {}", e.getMessage());
+                            return Flux.just("Error: Unable to process request.");
+                        });
     }
 }
