@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chat Interface</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+        <h1>AI Assistant</h1>
+        <p>Streaming responses from your AI model</p>
+        <div class="persona-selector">
+            <label for="personaSelect">Persona:</label>
+            <select id="personaSelect" onchange="setPersona(this.value)">
+                <option value="kiseki_sora">Sora</option>
+                <option value="tsundere">Immerkind</option>
+                <option value="kuudere">Kuudere</option>
+                <option value="fransiskus_david">David</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Messages Container -->
+    <div class="messages-container" id="messagesContainer">
+        <div class="message ai-message">
+            <div class="message-content">
+                Hello! I'm your AI assistant. How can I help you today?
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="input-container">
+        <div class="input-group">
+                <textarea
+                        id="messageInput"
+                        placeholder="Type your message here..."
+                        rows="3"
+                        onkeydown="handleKeyDown(event)"
+                ></textarea>
+            <button id="sendButton" onclick="sendMessage()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="controls">
+            <button id="clearButton" onclick="clearChat()">Clear Chat</button>
+            <div class="control-group">
+                <label class="switch">
+                    <input type="checkbox" id="streamToggle" checked>
+                    <span class="slider">Streaming</span>
+                </label>
+                <button id="cancelButton" onclick="cancelStream()" class="btn-cancel hidden">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="loading-indicator hidden">
+        <div class="typing-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        <span>AI is thinking...</span>
+    </div>
+</div>
+
+<script src="/js/chat.js"></script>
+</body>
+</html>

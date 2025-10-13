@@ -151,6 +151,7 @@ public class PersonaChatService {
                     if (chunk == null) {
                         chunk = "";
                     }
+                    logger.info("Generated Chunk:{}", chunk);
                     fullResponse.append(chunk);
                     return chunk;
                 })
