@@ -151,9 +151,13 @@ public class PersonaChatService {
                     if (chunk == null) {
                         chunk = "";
                     }
-                    logger.info("Generated Chunk:{}", chunk);
+                    String returnChunk = chunk;
+                    if (chunk.matches("[^\\n]\\n\\n") && chunk.length() >= 3) {
+                        returnChunk += "<new_paragraph>";
+                    }
+                    logger.debug("Generated Chunk:{} with size of {}", chunk, chunk.length());
                     fullResponse.append(chunk);
-                    return chunk;
+                    return returnChunk;
                 })
                 .doOnComplete(() -> {
                     String completeResponse = fullResponse.toString();

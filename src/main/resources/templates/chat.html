@@ -3,73 +3,118 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Chat Interface</title>
+    <title>Neural Chat</title>
     <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
 <div class="chat-container">
     <!-- Header -->
     <div class="chat-header">
-        <h1>AI Assistant</h1>
-        <p>Streaming responses from your AI model</p>
-        <div class="persona-selector">
-            <label for="personaSelect">Persona:</label>
-            <select id="personaSelect" onchange="setPersona(this.value)">
-                <option value="kiseki_sora">Sora</option>
-                <option value="tsundere">Immerkind</option>
-                <option value="kuudere">Kuudere</option>
-                <option value="fransiskus_david">David</option>
-            </select>
+        <div class="header-content">
+            <div class="header-title">
+                <div class="ai-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 5.5V7H9V5.5L3 7V9L9 10.5V12L3 13.5V15.5L9 14V16L3 17.5V19.5L9 18V22H15V18L21 19.5V17.5L15 16V14L21 15.5V13.5L15 12V10.5L21 9Z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1>Neural Chat</h1>
+                    <p>Real-time AI conversations</p>
+                </div>
+            </div>
+            <div class="persona-selector">
+                <div class="selector-wrapper">
+                    <label for="personaSelect">Persona</label>
+                    <select id="personaSelect" onchange="setPersona(this.value)">
+                        <option value="kiseki_sora">Sora</option>
+                        <option value="tsundere">Immerkind</option>
+                        <option value="kuudere">Kuudere</option>
+                        <option value="fransiskus_david">David</option>
+                        <option value="hrd">HRD</option>
+                    </select>
+                </div>
+            </div>
         </div>
     </div>
 
     <!-- Messages Container -->
     <div class="messages-container" id="messagesContainer">
-        <div class="message ai-message">
-            <div class="message-content">
-                Hello! I'm your AI assistant. How can I help you today?
+        <div class="welcome-message">
+            <div class="welcome-icon">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M7.07,18.28C7.5,17.38 8.14,16.5 9,15.75C10.26,14.72 11.61,14.25 12.9,14.29C14.15,14.34 15.3,14.85 16.47,15.86C17.28,16.57 17.95,17.35 18.46,18.21C17.05,19.09 14.78,19.74 12,19.74C10.25,19.74 8.47,19.39 7.07,18.28M12,4.53C13.26,5.81 14.19,7.5 14.62,9.37C14.17,9.76 13.62,10 13,10C11.34,10 10,8.66 10,7C10,6.05 10.41,5.21 11.05,4.63C11.34,4.36 11.67,4.13 12,4.53M16.95,15.5C15.76,14.52 14.36,14 12.9,13.93C11.38,13.86 9.87,14.4 8.5,15.5C7.58,16.21 6.85,17.07 6.35,18C5.25,16.93 4.53,15.54 4.53,14C4.53,10.94 6.7,8.36 9.65,7.67C10.1,8.25 10.83,8.62 11.65,8.62C13.47,8.62 15,7.09 15,5.29C16.06,5.68 17.05,6.25 17.95,7C19.21,8.23 20,9.85 20,11.75C20,13.23 19.45,14.59 18.5,15.64C17.93,15.25 17.45,15 16.95,15.5Z"/>
+                </svg>
+            </div>
+            <div class="welcome-text">
+                <h3>Welcome to Neural Chat!</h3>
+                <p>Choose your preferred persona and start a conversation with AI</p>
             </div>
         </div>
     </div>
 
     <!-- Input Area -->
     <div class="input-container">
-        <div class="input-group">
+        <div class="input-wrapper">
+            <div class="input-group">
                 <textarea
                         id="messageInput"
-                        placeholder="Type your message here..."
-                        rows="3"
+                        placeholder="Type your message..."
+                        rows="1"
                         onkeydown="handleKeyDown(event)"
+                        oninput="autoResize(this)"
                 ></textarea>
-            <button id="sendButton" onclick="sendMessage()">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
-                </svg>
-            </button>
-        </div>
-        <div class="controls">
-            <button id="clearButton" onclick="clearChat()">Clear Chat</button>
-            <div class="control-group">
-                <label class="switch">
-                    <input type="checkbox" id="streamToggle" checked>
-                    <span class="slider">Streaming</span>
-                </label>
-                <button id="cancelButton" onclick="cancelStream()" class="btn-cancel hidden">Cancel</button>
+                <button id="sendButton" onclick="sendMessage()" class="send-btn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                    </svg>
+                </button>
+            </div>
+            <div class="controls">
+                <button id="clearButton" onclick="clearChat()" class="btn-secondary">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                    </svg>
+                    Clear Chat
+                </button>
+                <div class="control-group">
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="streamToggle" checked>
+                        <span class="toggle-slider">
+                            <span class="toggle-on">Streaming</span>
+                            <span class="toggle-off">Static</span>
+                        </span>
+                    </label>
+                    <button id="cancelButton" onclick="cancelStream()" class="btn-cancel hidden">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                        </svg>
+                        Cancel
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- Loading Indicator -->
     <div id="loadingIndicator" class="loading-indicator hidden">
-        <div class="typing-dots">
-            <span></span>
-            <span></span>
-            <span></span>
+        <div class="typing-animation">
+            <div class="typing-dots">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+            <span>AI is thinking...</span>
         </div>
-        <span>AI is thinking...</span>
     </div>
 </div>
 
 <script src="/js/chat.js"></script>
+<script>
+    function autoResize(textarea) {
+        textarea.style.height = 'auto';
+        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+    }
+</script>
 </body>
 </html>

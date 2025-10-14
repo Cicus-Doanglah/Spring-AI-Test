@@ -101,7 +101,7 @@ class ChatInterface {
                     if (line.startsWith('data:')) {
                         const content = line.slice(5);
                         if (content && content !== '[DONE]') {
-                            console.log('Stream chunk:', content);
+//                            console.log('Stream chunk:', content);
                             this.processStreamChunk(content);
                         }
                     }
@@ -110,7 +110,7 @@ class ChatInterface {
 
             // Final cleanup
             this.currentStreamingMessage.classList.remove('streaming-text');
-            console.log('Stream completed');
+//            console.log('Stream completed');
 
         } catch (error) {
             console.error('Streaming error:', error);
@@ -126,8 +126,8 @@ class ChatInterface {
 
     processStreamChunk(chunk) {
         if (chunk && this.currentStreamingMessage) {
-            if (chunk.endsWith('.') && chunk.length > 50) {
-                chunk += '\n\n';
+            if (chunk.includes('<new_paragraph>')) {
+                chunk = chunk.replace(/<new_paragraph>/g, '\n\n');
             }
             this.appendToMessage(this.currentStreamingMessage, chunk);
             this.scrollToBottom();
