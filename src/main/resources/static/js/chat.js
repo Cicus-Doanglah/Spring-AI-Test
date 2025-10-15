@@ -7,7 +7,7 @@ class ChatInterface {
         this.streamToggle = document.getElementById('streamToggle');
 
         // Persona selection
-        this.persona = "kiseki_sora";
+        this.persona = "fransiskus_david";
         this.initEventListeners();
         this.currentStreamingMessage = null;
     }
